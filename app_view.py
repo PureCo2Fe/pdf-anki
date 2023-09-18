@@ -41,7 +41,7 @@ class AppView:
 （插件編號：2055492159）\n
 打開「工具」->「插件」->「設置」\n
 在「webCorsOriginList」中添加\n
-「 http://pdf2anki.pureco2fe.eu.org 」\n
+「 https://kenny-pdf2anki.streamlit.app/ 」\n
 然後重新啟動Anki。\n
 我會一直陪伴在你身邊唷~\n
 """)
