@@ -24,6 +24,44 @@ async function addFlashcard(deck: string, front: string, back: string, tags: str
     throw new Error('Error: Unable to reach the server');
   }
 }
+// Initialization: Check for Model Existence
+async function checkModelExistence() {
+  try {
+    const payload = {
+      action: "modelNames",
+      version: 6,
+    };
+    const response = await fetch("http://localhost:8765", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    const response_dict = await response.json();
+    if (!response_dict.result.includes("Basic")) {
+      const createPayload = {
+        action: "createModel",
+        version: 6,
+        params: {
+          modelName: "Basic",
+          inOrderFields: ["Front", "Back"],
+          isCloze: false,
+          cardTemplates: [
+            {
+              Name: "My Card 1",
+              Front: "{{Front}}",
+              Back: "{{Back}}",
+            },
+          ],
+        },
+      };
+      await fetch("http://localhost:8765", {
+        method: "POST",
+        body: JSON.stringify(createPayload),
+      });
+    }
+  } catch (error) {
+    throw new Error("Error: Unable to reach the server");
+  }
+}
 
 // Checks if server reachable
 async function reqPerm() {
@@ -43,6 +81,44 @@ async function reqPerm() {
   }
 }
 
+async function checkDeckExistence(deckName: string) {
+  try {
+    const payload = {
+      action: "getDeckStats",
+      version: 6,
+      params: {
+        decks: [deckName],
+      },
+    };
+    const response = await fetch("http://localhost:8765", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    const response_dict = await response.json();
+    if (response_dict.error !== null) {
+      const createPayload = {
+        action: "createDeck",
+        version: 6,
+        params: {
+          deck: deckName,
+        },
+      };
+      const createResponse = await fetch("http://localhost:8765", {
+        method: "POST",
+        body: JSON.stringify(createPayload),
+      });
+      const createResponse_dict = await createResponse.json();
+      if (createResponse_dict.error !== null) {
+        throw new Error(
+          "Error creating deck: " + createResponse_dict.error
+        );
+      }
+    }
+  } catch (error) {
+    throw new Error("Error: Unable to reach the server");
+  }
+}
+
 /**
  * The component's render function. This will be called immediately after
  * the component is initially loaded, and then again every time the
@@ -50,6 +126,7 @@ async function reqPerm() {
  */
 async function onRender(event: Event): Promise<void> {
   // Get the RenderData from the event
+  let success: void;
   const data = (event as CustomEvent<RenderData>).detail
 
   // RenderData.args is the JSON dictionary of arguments sent from the
@@ -58,10 +135,25 @@ async function onRender(event: Event): Promise<void> {
   let front = data.args["front"]
   let back = data.args["back"]
   let tags = data.args["tags"]
-
-  try {    
-    const success = await addFlashcard(deck, front, back, tags);
-    Streamlit.setComponentValue(`Worked!, ${success}`)
+  let flag = data.args["flag"]
+  
+  try {
+    switch (flag) {
+      case "check":
+        // Initialization for checking if server reachable and model exists
+        await reqPerm();
+        success = await checkModelExistence();
+        break;
+      case "createDeck":
+        // Create Deck
+        success = await checkDeckExistence(deck);
+        break;
+      default:
+        // Add Anki Cards to Deck
+        success = await addFlashcard(deck, front, back, tags);
+        break;
+    }
+    Streamlit.setComponentValue(`Worked!, ${success}`);
   } catch (error) {
     Streamlit.setComponentValue("Error")
   }

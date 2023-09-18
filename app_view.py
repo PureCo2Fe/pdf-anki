@@ -12,14 +12,18 @@ class AppView:
     def display(self):
         range_good = False
         with st.sidebar:
-            st.session_state["lang"] = st.selectbox("Returned language", ('English', 'German'), on_change=self.clear_data)
+            st.session_state["lang"] = st.selectbox("我會的語言很少（＞人＜；）", ('English', 'Chinese'), on_change=self.clear_data)
             col1, col2 = st.columns(2)
             with col1:            
-                start = st.number_input('Starting page', value=1, min_value=1, format='%i')
+                start = st.number_input('🧡 從哪一頁開始呢？', value=1, min_value=1, format='%i')
             with col2:
-                num = st.number_input('Number of pages', value=10, min_value=1, max_value=15, format='%d')
+                num = st.number_input('💗 看多少頁呢？', value=1, min_value=1, max_value=200, format='%d')
 
-            file = st.file_uploader("Choose a file", type=["pdf"])
+            file = st.file_uploader("""
+💫要把什麽文件塞進我 ~腦子~ 裏面呀?\n
+💦不過我最多只會看200頁喔~\n
+\n
+""", type=["pdf"])
             if file:                
                 st.session_state["file_name"] = file.name
                 doc = fitz.open("pdf", file.read())
@@ -31,9 +35,19 @@ class AppView:
                     range_good = False
                 else:
                     range_good = True
-            st.info("To add flashcards to Anki:\n- Anki needs to be running with AnkiConnect installed (Addon #: 2055492159)\n- In Anki: Tools -> Addons -> Config add 'https://pdf-anki.streamlit.app' to 'webCorsOriginList' and then restart Anki")
+            st.info("""
+💖 ご主人様！還差一步唷~：\n
+確保主人已經安裝了AnkiConnect插件\n
+（插件編號：2055492159）\n
+打開「工具」->「插件」->「設置」\n
+在「webCorsOriginList」中添加\n
+「 http://pdf2anki.pureco2fe.eu.org 」\n
+然後重新啟動Anki。\n
+我會一直陪伴在你身邊唷~\n
+""")
             st.divider()
-            st.write("[Feedback](mailto:pdf.to.anki@gmail.com)")
+            st.write("🐾 This Project is developed by [benno094](https://github.com/benno094/pdf-anki)")
+            st.write("💖 Services provided by Co2Fe-Kenny ~")
 
         # TODO: Cache all created flashcards
     
@@ -92,7 +106,7 @@ class AppView:
 
                             if f"{i}_is_title" in st.session_state:
                                 flashcards = None
-                                st.info("No flashcards generated for this slide as it doesn't contain relevant information.")
+                                st.info("我好像看不懂這一頁......對不起主人 ≧ ﹏ ≦ ！")
 
                             # Check if GPT returned something usable, else remove entry and throw error
                             if flashcards:
@@ -115,40 +129,46 @@ class AppView:
                                         if st.session_state["flashcards_" + str(p) + "_count"] > 5:
                                             st.session_state[f"fc_active_{p, i}"] = False
                                             st.session_state["flashcards_" + str(p) + "_to_add"] = 0
-                                            st.text_input(f"Front", value=flashcard["front"], key=f"front_{p, i}", disabled=True)
-                                            st.text_area(f"Back", value=flashcard["back"], key=f"back_{p, i}", disabled=True)
+                                            st.text_input(f"小可愛的前面", value=flashcard["front"], key=f"front_{p, i}", disabled=True)
+                                            st.text_area(f"小可愛的後面", value=flashcard["back"], key=f"back_{p, i}", disabled=True)
 
-                                            st.button("Enable flashcard", key=f"del_{p, i}", on_click=self.enable_flashcard, args=[p, i])
+                                            st.button("✅ 我就要這張啦 ~", key=f"del_{p, i}", on_click=self.enable_flashcard, args=[p, i], use_container_width=True)
                                         else:                                           
                                             st.session_state[f"fc_active_{p, i}"] = True
-                                            st.text_input(f"Front", value=flashcard["front"], key=f"front_{p, i}", disabled=False)
-                                            st.text_area(f"Back", value=flashcard["back"], key=f"back_{p, i}", disabled=False)
+                                            st.text_input(f"小可愛的前面", value=flashcard["front"], key=f"front_{p, i}", disabled=False)
+                                            st.text_area(f"小可愛的後面", value=flashcard["back"], key=f"back_{p, i}", disabled=False)
 
-                                            st.button("Disable flashcard", key=f"del_{p, i}", on_click=self.disable_flashcard, args=[p, i])
+                                            st.button("🚫 哼，還是不要了！", key=f"del_{p, i}", on_click=self.disable_flashcard, args=[p, i], use_container_width=True)
                                     elif f"fc_active_{p, i}" in st.session_state and st.session_state[f"fc_active_{p, i}"] == False:                                        
-                                        st.text_input(f"Front", value=flashcard["front"], key=f"front_{p, i}", disabled=True)
-                                        st.text_area(f"Back", value=flashcard["back"], key=f"back_{p, i}", disabled=True)
+                                        st.text_input(f"小可愛的前面", value=flashcard["front"], key=f"front_{p, i}", disabled=True)
+                                        st.text_area(f"小可愛的後面", value=flashcard["back"], key=f"back_{p, i}", disabled=True)
 
-                                        st.button("Enable flashcard", key=f"del_{p, i}", on_click=self.enable_flashcard, args=[p, i])
+                                        st.button("✅ 我就要這張啦 ~", key=f"del_{p, i}", on_click=self.enable_flashcard, args=[p, i], use_container_width=True)
                                     else:                                    
-                                        st.text_input(f"Front", value=flashcard["front"], key=f"front_{p, i}", disabled=False)
-                                        st.text_area(f"Back", value=flashcard["back"], key=f"back_{p, i}", disabled=False)
+                                        st.text_input(f"小可愛的前面", value=flashcard["front"], key=f"front_{p, i}", disabled=False)
+                                        st.text_area(f"小可愛的後面", value=flashcard["back"], key=f"back_{p, i}", disabled=False)
 
-                                        st.button("Disable flashcard", key=f"del_{p, i}", on_click=self.disable_flashcard, args=[p, i])
+                                        st.button("🚫 哼，還是不要了！", key=f"del_{p, i}", on_click=self.disable_flashcard, args=[p, i], use_container_width=True)
 
-                            col1, col2 = st.columns([0.4,1])
-                            with col1:
+                            #col1, col2 = st.columns([1,1])
+                            #with col1:
                                 # Blank out 'add to Anki' button if no cards
-                                if st.session_state["flashcards_" + str(p) + "_to_add"] == 0:
-                                    no_cards = True
-                                else:
-                                    no_cards = False                                
-                                if "flashcards_" + str(p) + "_added" not in st.session_state:
-                                    st.button(f"Add {st.session_state['flashcards_' + str(p) + '_to_add']} flashcard(s) to Anki", key=f"add_{str(p)}", on_click=self.prepare_and_add_flashcards_to_anki, args=[p], disabled=no_cards)
-                            with col2:
-                                if "flashcards_" + str(p) + "_tags" not in st.session_state:
-                                    st.session_state["flashcards_" + str(p) + "_tags"] = st.session_state["file_name"].replace(' ', '_').replace('.pdf', '') + "_page_" + str(p + 1)
-                                st.text_input("Tag:", value = st.session_state["flashcards_" + str(p) + "_tags"], key = f"tag_{str(p)}")
+
+                            if "flashcards_" + str(p) + "_tags" not in st.session_state:
+                                st.session_state["flashcards_" + str(p) + "_tags"] = st.session_state["file_name"].replace(' ', '_').replace('.pdf', '') + "_page" + str(p + 1)
+                            if "flashcards_" + str(p) + "_deckName" not in st.session_state:
+                                st.session_state["flashcards_" + str(p) + "_deckName"] = st.session_state["file_name"].replace(' ', '_').replace('.pdf', '')
+                            st.session_state["flashcards_" + str(p) + "_deckName"] = st.text_input("這群小可愛要放進哪個牌組呢？", value = st.session_state["file_name"].replace(' ', '_').replace('.pdf', ''), key = f"tag_{str(p)}")            
+                            if st.session_state["flashcards_" + str(p) + "_to_add"] == 0:
+                                no_cards = True
+                            else:
+                                no_cards = False                                
+                            if "flashcards_" + str(p) + "_added" not in st.session_state:
+                                st.button(f"💓 把 {st.session_state['flashcards_' + str(p) + '_to_add']} 張小可愛放進我的Anki裏 ~", key=f"add_{str(p)}", on_click=self.prepare_and_add_flashcards_to_anki, args=[p], disabled=no_cards, use_container_width=True)
+                            #with col2:
+                            #    if "flashcards_" + str(p) + "_tags" not in st.session_state:
+                            #        st.session_state["flashcards_" + str(p) + "_tags"] = st.session_state["file_name"].replace(' ', '_').replace('.pdf', '') + "_page_" + str(p + 1)
+                            #    st.text_input("這群小可愛要取什麽樣的名字呢？", value = st.session_state["flashcards_" + str(p) + "_tags"], key = f"tag_{str(p)}")
         else:
             if 'image_0' in st.session_state:
                 self.clear_data()

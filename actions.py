@@ -8,14 +8,19 @@ import streamlit.components.v1 as components
 
 openai.api_key == st.secrets["OPENAI_API_KEY"]
 
-# Custom component to call AnkiConnect on client side
+openai.api_base = "https://api.chatanywhere.cn/v1"
 parent_dir = os.path.dirname(os.path.abspath(__file__))
 build_dir = os.path.join(parent_dir, "API/frontend/build")
 _API = components.declare_component("my_component", path=build_dir)
 
-def API(deck, front, back, tags):
-    component_value = _API(deck=deck, front=front, back=back, tags=tags)
+def API(deck, front, back, tags, flag):
+    component_value = _API(deck=deck, front=front, back=back, tags=tags, flag=flag)
     return component_value
+# Custom component to call AnkiConnect on client side
+"""
+### Old API
+def API(deck, front, back, tags):
+"""
 
 class Actions:
     def __init__(self, root):
@@ -31,10 +36,17 @@ You are receiving the text from one slide of a lecture. Use the following princi
 - If slide appears to only include a table call null_function.
 - Create Anki flashcards for an exam at university level.
 - Each card is standalone.
-- Short answers.
+- It is very important to make the answers be concise and precise.
+- Short Answer
 - All information on slide needs to be used and only use the information that is on the slide.
 - Answers should be on the back and not included in the question.
 - Only add each piece of information once.
+- You can create "Factual" type questions: These are questions that ask for specific facts, such as "Who," "What," "When," and "Where."
+- You can create "Inferential" type questions: These are questions that ask for explanations or reasons, such as "Why" and "How."
+- You can create "Comparative" type questions: These questions ask for a comparison or contrast between two or more items.
+- You can create "Cause and Effect" type questions: These questions ask for the cause or result of a given event or situation.
+- You can create "Vocabulary Definition" type questions: These questions ask for the definition of a specific term or concept.
+- You can create "Process Explanation": These questions ask for a step-by-step explanation or procedure.
 - Questions and answers must be in """ + st.session_state["lang"] + """.
 - No questions about the uni, course, professor or auxiliary slide information.
 - If whole slide fits on one flashcard, do that.
@@ -89,8 +101,8 @@ You are receiving the text from one slide of a lecture. Use the following princi
                         }
                     ],
                     # TODO: play with temperature
-                    temperature=0.9,
-                    request_timeout=25,
+                    temperature=0.1,
+                    request_timeout=60,
                 )
                 
                 print(f"Call no. {str(retries + 1)} for slide {str(page + 1)}")
@@ -117,12 +129,18 @@ You are receiving the text from one slide of a lecture. Use the following princi
     def add_to_anki(self, cards, page):
         try:
             # TODO: implement new API check
-            
+            deckName = st.session_state["flashcards_" + str(page) + "_deckName"]
+            # Check for Model Existence
+            API(deckName, "", "", "", "check")
+            # End of Initialization
+            # Check if deck exists
+            API(deckName, "", "", "", "createDeck")
+            # Add cards to deck
             for card in cards:
                 front = card['front']
                 back = card['back']
                 tags = st.session_state["flashcards_" + str(page) + "_tags"]
-                API("MyDeck", front, back, tags)
+                API(deckName, front, back, tags, "add")
             return True
 
         except Exception as e:
@@ -152,7 +170,7 @@ You are receiving the text from one slide of a lecture. Use the following princi
             return response_data
 
         except Exception as e:
-            print(f"Error with OpenAI's GPT-3.5 Turbo: {str(e)}")
+            print(f"Error with OpenAI's GPT: {str(e)}")
             print(text)
 
     def escape_inner_brackets(self, match_obj):

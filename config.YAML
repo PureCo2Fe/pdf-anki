@@ -1,0 +1,13 @@
+credentials:
+  usernames:
+    nursing:
+      email: co2fe@connect.hku.hk
+      name: nursing
+      password: $2b$12$HwVOhX1hkFyCp7bBi5eUfe0BuUX5VdFj6/Mho79z53kk/KHisN/em
+cookie:
+  expiry_days: 7
+  key: Nursing1sS0Hard # Must be string
+  name: c
+preauthorized:
+  emails:
+  - none@gmail.com
